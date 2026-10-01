@@ -1,18 +1,20 @@
 @echo off
-echo ============================================
-echo   双击本文件即可完成 GitHub 登录授权
-echo   （只需在浏览器里点一下"授权"，无需记命令）
-echo ============================================
+echo ============================================================
+echo  GitHub Login - follow the steps below
+echo ============================================================
 echo.
-echo 即将打开浏览器并显示一个一次性验证码。
-echo 请按提示在浏览器里粘贴验证码并点击 Authorize。
+echo  STEP 1: A one-time code like XXXX-XXXX will appear here.
+echo  STEP 2: Browser opens github.com/login/device
+echo          (if not, open it manually)
+echo  STEP 3: Paste the code, click Continue, then Authorize.
+echo  STEP 4: This window shows success by itself.
 echo.
-pause
-"C:\Program Files\GitHub CLI\gh.exe" auth login --web --git-protocol https --hostname github.com
+echo  Press any key to start...
+pause >nul
 echo.
-echo ============================================
-echo   登录完成后，这个窗口会自动停在下面这行。
-echo   看到 "Logged in to github.com" 就成功了。
-echo   直接关掉窗口，然后告诉阿朴"登录好了"即可。
-echo ============================================
+"C:\Program Files\GitHub CLI\gh.exe" auth login --hostname github.com --git-protocol https
+echo.
+echo  If you see "Logged in to github.com" -> DONE.
+echo  Close this window, then tell A-Pu "login done".
+echo  If error, copy the red text and send to A-Pu.
 pause
