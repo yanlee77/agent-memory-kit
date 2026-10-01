@@ -1,0 +1,21 @@
+# 真实记忆文件（只提交 .example 模板，真实数据不入库）
+MEMORY.md
+索引_按时间.md
+索引_按事件.md
+索引_按技法（关键词）.md
+20*/
+
+# 敏感文件
+.env
+*.env
+*.key
+*key*
+*token*
+*credential*
+*password*
+secret*
+
+# 系统
+__pycache__/
+*.pyc
+.DS_Store
