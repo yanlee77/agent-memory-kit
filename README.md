@@ -22,11 +22,12 @@
 
 ## 它是什么样
 
-三层记忆（按作用域从小到大）：
+三层记忆（按作用域从小到大）。**最底下还有一层"真身"，是整套不丢记忆的地基**——详见下文「为什么需要账号无关的真身」与 `真身机制.md`：
 
 | 层 | 位置 | 作用域 | 写什么 |
 |----|------|--------|--------|
 | 云端记忆 | 平台托管（可选） | 跨设备、跨会话 | 自动生成的用户画像摘要（只读，由服务端维护） |
+| **真身（账号无关保险库）** | `~/memory-vault`（平台配置目录**之外**） | 跨账号、跨平台 | **永不丢失的本体**：平时不操作，只有合并、添加。详见 `真身机制.md` |
 | **用户级记忆** | `~/.agent-memory/MEMORY.md` | 跨所有项目 | **原则、态度、硬约束、长期偏好**——常驻区 |
 | **工作区级记忆** | `<workspace>/.agent-memory/` | 当前项目 | 项目决策、每日日志、按事件/技法索引 |
 
@@ -40,14 +41,47 @@
 
 ---
 
+## 为什么需要账号无关的真身（重点）
+
+> 配套文档：`真身机制.md`（机制与铁律）、`recover.md`（失忆三步自救）、`guard.sh`（同步引擎）。
+
+前面那套"索引 + 分层"解决了**怎么组织**记忆，但没解决一个更致命的问题：
+**记忆存在哪**。
+
+大多数 AI 工具把长期记忆放在自己的配置目录里（如 `~/.workbuddy/memory/`），这些目录
+**跟着登录账号走**——换账号、重装、平台清缓存，会被清空或覆盖。你前面攒的所有上下文，一夜归零。
+
+解法：在平台配置目录**之外**放一份"真身"（vault），账号无关、平台无关，平时不操作它，只有合并、添加。
+工作副本被清空时，从真身取回即可。
+
+```
+ 工作副本 WORK      真身 VAULT          镜像 MIRROR
+ ~/.agent-memory   ~/memory-vault      ~/memory-vault-mirror
+ （平台目录内，      （平台目录之外，      （另一块盘，理想情况）
+  换账号会被清空）    账号无关，永不操作）   只补不删，防硬件坏
+       │  ↕ 双向合并        │
+       └────────────────────┘
+         guard.sh 负责同步
+```
+
+- 真身 `~/memory-vault` 必须放在平台配置目录**之外**（不要放在 `~/.workbuddy/` 这类跟着账号走的地方）。
+- `guard.sh` 用 `.vault-anchor` 随机锚点判定工作副本是否被换账号重置；复位时整体回灌，平时只双向合并。
+- **四条铁律**：只合并只添加永不删除；锚点判定不靠关键字猜身份；镜像只补不删（绝不用 `/MIR`）；先合并后镜像。
+- **别跟系统较劲**：不挂开机启动项 / 计划任务，每次对话结束自己跑一次就够。
+
 ## 快速开始
 
 ```bash
-python init_memory.py --root ~/.agent-memory
+# 1) 生成工作副本骨架 + 真身骨架（同一随机锚点写进两边）
+python init_memory.py --root ~/.agent-memory --vault ~/memory-vault
+
+# 2) 每次对话结束跑一次：平时=双向合并；被换账号清空时=从真身回灌
+bash guard.sh
 ```
 
 它会生成上面那套骨架（全是占位示例，不含任何真实数据）。
-或直接复制仓库里的 `*.example.md` 模板改名使用。
+`--vault` 会在平台目录之外建一份账号无关真身；不传则只建工作副本。
+或直接复制仓库里的 `*.example.md` 模板改名使用。路径可用环境变量 `AMK_VAULT` / `AMK_WORK` / `AMK_MIRROR` 覆盖。
 
 ---
 
@@ -121,7 +155,10 @@ python init_memory.py --root ~/.agent-memory
 ```
 agent-memory-kit/
 ├── README.md                    # 本文档
-├── init_memory.py               # 骨架生成 + 跨索引检索脚本
+├── init_memory.py               # 骨架生成（支持 --vault 真身）+ 跨索引检索脚本
+├── guard.sh                     # 账号隔离防护：真身<->工作副本双向合并 / 复位回灌
+├── 真身机制.md                  # 为什么需要账号无关的真身 + 四条铁律 + 踩坑教训
+├── recover.md                   # 失忆三步自救（放在真身里，账号无关）
 ├── MEMORY.example.md            # 主记忆模板（占位示例）
 ├── 索引_按时间.example.md
 ├── 索引_按事件.example.md
@@ -142,9 +179,11 @@ agent-memory-kit/
 ## English TL;DR
 
 A portable, text-only **memory spec for AI agents**: multi-axis indexes (time / event / technique)
-+ layered memory (cloud / user-level / workspace) + a startup SOP, so an agent can "wake up"
-across sessions without losing context. No platform lock-in, no black-box plugin—just files
-and conventions any file-capable agent can use. Includes a sanitization red-line section
-(never commit keys, dev processes, or private PII) and a sanitized case study.
++ layered memory (cloud / account-independent **vault** / user-level / workspace) + a startup SOP,
+so an agent can "wake up" across sessions without losing context. No platform lock-in, no black-box
+plugin—just files and conventions any file-capable agent can use. The **vault** layer lives *outside*
+the platform config dir and is account-independent: `guard.sh` keeps it in two-way sync with the live
+working copy and restores from it if the account is switched/wiped. Includes a sanitization red-line
+section (never commit keys, dev processes, or private PII) and a sanitized case study.
 
 License: MIT（可改）

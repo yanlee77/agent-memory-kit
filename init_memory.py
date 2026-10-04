@@ -2,10 +2,12 @@
 # init_memory.py —— Agent Memory Kit 骨架生成 + 跨索引检索
 # 纯标准库，跨平台（Windows / macOS / Linux 均可）。
 # 用法：
-#   python init_memory.py --root ~/.agent-memory        # 生成骨架
-#   python init_memory.py --root ~/.agent-memory --search "GGUF"   # 跨索引检索
+#   python init_memory.py --root ~/.agent-memory                     # 生成工作副本骨架
+#   python init_memory.py --root ~/.agent-memory --vault ~/memory-vault  # 同时初始化账号无关真身
+#   python init_memory.py --root ~/.agent-memory --search "GGUF"     # 跨索引检索
 import argparse
 import os
+import secrets
 import sys
 
 TEMPLATES = {
@@ -35,7 +37,20 @@ TEMPLATES = {
 INDEX_FILES = list(TEMPLATES.keys())
 
 
-def init(root: str) -> None:
+def make_anchor() -> str:
+    """生成一个随机锚点串，用于 guard.sh 判定工作副本是否被换账号重置。"""
+    return "VAULT-ANCHOR:" + secrets.token_hex(8)
+
+
+def write_anchor(root: str, tag: str) -> None:
+    os.makedirs(root, exist_ok=True)
+    with open(os.path.join(root, ".vault-anchor"), "w", encoding="utf-8") as f:
+        f.write(f"{tag}\n")
+    print(f"  锚点: {root}/.vault-anchor ({tag})")
+
+
+def init(root: str, vault: str | None = None) -> None:
+    tag = make_anchor()
     os.makedirs(root, exist_ok=True)
     for name, content in TEMPLATES.items():
         path = os.path.join(root, name)
@@ -45,8 +60,25 @@ def init(root: str) -> None:
             with open(path, "w", encoding="utf-8") as f:
                 f.write(content)
             print(f"  生成: {path}")
+    write_anchor(root, tag)
+
+    if vault:
+        # 真身：账号无关、平台无关。用同一锚点，guard.sh 才能比对复位。
+        os.makedirs(vault, exist_ok=True)
+        for name, content in TEMPLATES.items():
+            vpath = os.path.join(vault, name)
+            if os.path.exists(vpath):
+                print(f"  跳过（已存在）: {vpath}")
+            else:
+                with open(vpath, "w", encoding="utf-8") as f:
+                    f.write(content)
+                print(f"  生成: {vpath}")
+        write_anchor(vault, tag)
+        print(f"\n真身已就绪：{vault}（放在平台配置目录之外，账号无关）")
+
     print(f"\n骨架已就绪：{root}")
     print("下一步：填 MEMORY.md 身份与硬约束；日常写三个索引 + 按日期分记忆。")
+    print("每次对话结束跑一次 bash guard.sh，把工作副本同步进真身。")
 
 
 def search(root: str, keyword: str) -> None:
@@ -69,14 +101,17 @@ def search(root: str, keyword: str) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Agent Memory Kit 工具")
-    ap.add_argument("--root", default="~/.agent-memory", help="记忆根目录")
+    ap.add_argument("--root", default="~/.agent-memory", help="工作副本记忆根目录")
+    ap.add_argument("--vault", help="真身目录（账号无关，放在平台配置目录之外）；"
+                                     "指定后会同时初始化真身骨架并写入同一锚点")
     ap.add_argument("--search", help="跨索引检索关键词")
     args = ap.parse_args()
     root = os.path.expanduser(args.root)
+    vault = os.path.expanduser(args.vault) if args.vault else None
     if args.search:
         search(root, args.search)
     else:
-        init(root)
+        init(root, vault)
     return 0
 
 

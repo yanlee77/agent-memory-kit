@@ -19,3 +19,7 @@ secret*
 __pycache__/
 *.pyc
 .DS_Store
+
+# 本地生成（init/guard 产物，机器相关，不入库）
+.vault-anchor
+guard.log
