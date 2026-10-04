@@ -175,10 +175,13 @@ agent-memory-kit/
 
 - 当前规范版本号：`v0.2`。
 - 版本历史（每个历史版本单独成目录，方便看清项目是怎么一步步长起来的）：
-  - **`v0.1/`** —— 初版草稿：多维交叉索引 + 分层记忆（云端 / 用户级 / 工作区级）+ 启动 SOP + 脱敏红线。
+  - **`v0.1/`** —— 初版草稿：**多维交叉索引记忆系统**。以「时间 / 事件 / 技法」三轴索引 + 分层记忆（云端 / 用户级 / 工作区级）
+    + 启动 SOP + 脱敏红线构成。此时记忆仍挂在平台账号配置目录下，**没有脱离账号的真身**，换账号即失忆。
     完整历史快照见 [`v0.1/`](v0.1/) 目录（冻结，不再改）。
-  - **`v0.2`（本目录）** —— 新增**账号无关真身**机制：`guard.sh`（真身↔工作副本双向合并、锚点判定复位回灌、
-    镜像只补不删）、`真身机制.md`、`recover.md`；`init_memory.py` 支持 `--vault` 同时初始化真身骨架并写入随机锚点。
+  - **`v0.2`（本目录）** —— 在 v0.1 的索引多维记忆系统之上，**新增账号无关「真身」层与「自救」能力**：
+    - 真身：`guard.sh`（真身↔工作副本双向合并、锚点判定复位回灌、镜像只补不删）、`真身机制.md`；
+      真身放在平台配置目录**之外**，只增不删、与账号无关，`init_memory.py --vault` 同时初始化真身骨架并写入随机锚点。
+    - 自救：`recover.md` 放在真身里，失忆时三步自行恢复（跑 guard.sh → 读主记忆 → 读索引），不依赖云端账号。
 - 演进约定：任何对读写纪律的修改，先在 `MEMORY.example.md` 顶部 changelog 记一笔，再改正文。
 - 欢迎 PR，但 PR 不得引入任何真实凭证或私人信息。
 
@@ -193,5 +196,9 @@ plugin—just files and conventions any file-capable agent can use. The **vault*
 the platform config dir and is account-independent: `guard.sh` keeps it in two-way sync with the live
 working copy and restores from it if the account is switched/wiped. Includes a sanitization red-line
 section (never commit keys, dev processes, or private PII) and a sanitized case study.
+
+Version line: `v0.1` = index-based multi-axis memory only (still bound to the account; switching accounts loses it);
+`v0.2` = v0.1 + an **account-independent vault** and a **self-recovery** path (`recover.md`) so an agent can wake
+itself up even after the account is wiped. History: the full `v0.1` snapshot is frozen in [`v0.1/`](v0.1/).
 
 License: MIT（可改）
