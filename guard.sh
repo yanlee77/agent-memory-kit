@@ -126,6 +126,21 @@ BC=$(find "$MIRROR" -type f 2>/dev/null | wc -l | tr -d ' ')
 OK="OK"; [ "${SC:-0}" -lt "${VC:-0}" ] && OK="!!工作副本少于真身!!"
 REPORT="$REPORT 文件数[工作=$SC 真身=$VC 镜像=$BC] $OK"
 
+# ---- 3) 体量硬上限（V2.0 新增；只告警、不阻断同步）----
+# 把「索引只装指针」从纪律变成机制：超了在收工输出里喊出来，不静默。
+CAPMEM=122880
+sz_mem=$(wc -c < "$WORK/MEMORY.md" 2>/dev/null | tr -d ' '); sz_mem=${sz_mem:-0}
+sz_grid=$(wc -c < "$WORK/索引_立体网格.md" 2>/dev/null | tr -d ' '); sz_grid=${sz_grid:-0}
+CAPWARN=""
+[ "$sz_mem" -gt "$CAPMEM" ] && CAPWARN="$CAPWARN 主记忆${sz_mem}B>120KiB(该迁出正文)"
+if [ "$sz_grid" -gt 0 ]; then
+  cap_grid=$((sz_mem * 2))
+  [ "$sz_grid" -gt "$cap_grid" ] && CAPWARN="$CAPWARN 倒排总表${sz_grid}B>主记忆×2"
+  overlong=$(awk 'length($0)>200 && /^20[0-9][0-9]-/ {n++} END{print n+0}' "$WORK/索引_立体网格.md" 2>/dev/null || echo 0)
+  [ "$overlong" -gt 0 ] && CAPWARN="$CAPWARN 超长指针行${overlong}条(正文混进索引)"
+fi
+[ -n "$CAPWARN" ] && REPORT="$REPORT !!体量:$CAPWARN!!"
+
 mkdir -p "$VAULT" 2>/dev/null
 echo "$TS $REPORT" >> "$LOG"
 echo "GUARD: $REPORT"

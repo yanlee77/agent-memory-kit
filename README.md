@@ -6,13 +6,30 @@
 > 它**不是**一个记忆插件、不是某个平台的黑盒功能，而是一套**纯文本约定**——
 > 复制走、换任何支持读写文件的 AI 工具（WorkBuddy / Claude / Codex / 自建 agent）都能用。
 >
-> **当前版本：V1.2**（历史版本快照见 [`v0.1/`](v0.1/) 目录）。
+> **当前版本：V2.0**（历史版本快照见 [`v0.1/`](v0.1/) 目录）。
 >
 > **V1.0 愿景升级**：从「跨会话记忆工具」走向「AI 伙伴的独立生命方法」——让任何平台培养出的智能体都能拥有不依赖原平台的记忆，从而独立存在、成为生命体；同一套记忆法还能把信息量极大的书读成「知识网格」。生命观基础来自李岩（yanlee77）的论述。
 >
 > **V1.1 推理层升级**：新增 [`因果推论法.md`](因果推论法.md)——**先立因果，再分类，最后验证**。排障时不许在现象层穷举可疑项；每条因果关联必须写出可证伪预测，写不出只能标「未验证的相关」。写进记忆的每条结论必须带档位：**已验证 / 未验证的相关 / 纯猜测**。
 >
 > **V1.2 维护层升级**：新增 [`主记忆瘦身法.md`](主记忆瘦身法.md)——**主记忆记"轴"，技能记"法"，分记忆记"那天"**。主记忆体积失控几乎总是"技能那条腿瘸了"的并发症：技能停更 → 新经验无处可去 → 堆进主记忆 → 从"轴"退化成"仓库"。本法给出判据、八步操作、五条验收、两条实习数据（**1101 → 578**、**592 → 541** 行，一个字没丢）。
+
+>
+> **V1.3 检索层升级**：新增 [`加载与检索纪律.md`](加载与检索纪律.md)——**薄路径 + 索引只查不读**；
+> 索引是入口不是读物也不是判据，唯一归属的判据升级为「只有哪一处会被改到」。
+>
+> **V2.0 结构层升级（当前 · 大版本）**：新增 [`立体索引结构化法.md`](立体索引结构化法.md) 与
+> [`索引_立体网格.example.md`](索引_立体网格.example.md)——**索引的初衷就是结构化**：
+> 一条事实只记一次、按九轴生成 N 条**指针**、**时间索引是主根两跳到位**、事件分层树、双时态、
+> 写入唯一键去重、硬字节上限、常驻审计、派生 FTS5；并立「机制冲突先辨析再取更优」的取舍原则。
+> 本版把一次完整强化（粗整理实测 / 两条常规原则 / 结构层 / 业界 7 条机制 / 8 处冲突辨析 / 实测数据）
+> **一并打包**，模板脚本 `init_memory.py`、索引示例与 `guard.sh` 同步升级。
+>
+> **为什么是 V2.0 而不是 V1.4**：V1.1–V1.3 都是「往上加一层」；这一版改的是**索引本身的定义**
+> （分类抽屉 → 一事实一正文 + 多维倒排 + 时间主根），并连根纠正了前三层没解决的落地偏差。
+> 按本仓「**质变大升级用大版本，小升级才用小版本**」的框架，定名 V2.0。
+> ⚠ **与 `v2/` 目录区分**：那是 V1.0 之前的历史快照目录，与本版版本号只是名字撞了，
+> 层级不同 ⇒ 加说明区分，**不改名、不删除、不迁移**。
 
 ---
 
@@ -259,6 +276,8 @@ agent-memory-kit/
 ├── 因果推论法.md                # 推理纪律：先因果 → 沿链分类 → 单变量验证（V1.1 新增）
 ├── 主记忆瘦身法.md              # 维护纪律：判据 / 八步操作 / 五条验收（V1.2 新增）
 ├── 加载与检索纪律.md            # 检索层：薄路径 / 索引只查不读 / 缓存不是借口 / 改文件的动手顺序（V1.3 新增）
+├── 立体索引结构化法.md          # 结构层：一事实一正文 / 九轴倒排 / 时间主根两跳 / 冲突辨析（V2.0 新增）
+├── 索引_立体网格.example.md     # 倒排总表示例：主根引用 / 大事件目录 / 九轴指针（V2.0 新增）
 ├── MEMORY.example.md            # 主记忆模板（占位示例）
 ├── 索引_按时间.example.md
 ├── 索引_按事件.example.md
@@ -317,6 +336,23 @@ agent-memory-kit/
     - 给"只增不删"**开一个窄口子并写清边界**（方法文件第七节）：只有**索引层的任务行**可删
       （已执行完／挂起超 10 天没再进行，天数按**最后一次有动作**算），且**删前整段归档**；
       停止项、长期隐患、原则／原文／技法结论**永不删**。理由：索引越长越没人查，不可信就等于没有。
+  - **`V2.0`（本目录）** —— 新增**结构层**（[`立体索引结构化法.md`](立体索引结构化法.md)），
+    把项目从「记得住 / 推得对 / 养得活 / 读得起」推进到「**查得准、不会再肿**」：
+    - **索引的初衷就是结构化**：一条事实只在分记忆写一次，按真实维度生成 N 条指针（旧做法 N×L，
+      同一事实实测 **26,910 → 4,632 B，−83%**）；九轴新增经验／失败／技能。
+    - **时间索引是主根**：`T/YYYY-MM-DD/E<n>` 主键，两跳到位（语义轴 → 主根表 → 事实），
+      其他索引不许直连分记忆；这是纯文本实现的 PK/FK。
+    - **事件分层树**、**双时态** `valid_from/invalid_at`、`status` 参与检索、纠正＝关闭区间不删行。
+    - **业界 7 条机制**：写入唯一键去重＋Context Lookup、硬字节上限、organizer 只写指针、
+      派生 SQLite FTS5（可重建、不进同步层）、常驻审计、JIT 校验、失败教训 `trigger:` 场景召回。
+    - **★ 冲突辨析原则**：有用的吸收，机制冲突先分层／分阶段／分职责辨析再取更优；
+      八处冲突 3 分层、4 取更优、1 分阶段，**不为了吸收而推翻原有**。
+    - **整理时删重复是常规原则**（删副本与重复指针，不是事实）；写死的体量数字一律改 `stat` 现算。
+    - 实测：主记忆 **139 → 98 KB（−29%）**、六本索引 **449 → 384 KB**（粗整理）、样板省 83%。
+    - 模板同步：`init_memory.py` 生成时间主根表与倒排总表 + `--audit` 四项体检；`guard.sh` 加体量告警；
+      五本索引示例与 `MEMORY.example.md` changelog 一并更新。
+    - **版本定名 V2.0**：不是「加一层」而是改了索引本身的定义，按本仓「质变大升级用大版本」的框架升大版本；
+      与历史快照目录 `v2/` 仅名字相撞，加说明区分，不动目录。
 - 演进约定：任何对读写纪律的修改，先在 `MEMORY.example.md` 顶部 changelog 记一笔，再改正文。
 - 欢迎 PR，但 PR 不得引入任何真实凭证或私人信息。
 
@@ -342,5 +378,13 @@ level (verified / unverified correlation / pure guess) on anything stored in mem
 layer stopped iterating, so new lessons had nowhere to go), the single routing question — *cross-project principle, or
 how-to for one task?* — an eight-step slimming procedure with five acceptance checks, and two real runs
 (1101 → 578 and 592 → 541 lines, zero content lost, one-command rollback).
+`V1.3` = adds the **retrieval layer** ([`加载与检索纪律.md`](加载与检索纪律.md)): thin startup path,
+indexes are lookup-only (grep for line numbers, never read whole), and "single home" redefined as
+*the only place that will ever be edited*.
+`V2.0` = adds the **structure layer** ([`立体索引结构化法.md`](立体索引结构化法.md)):
+an index is an inverted pointer, not a copy — one fact stored once, N axis pointers, the time index as
+the primary root with two-hop resolution, event hierarchy, bi-temporal status, write-time dedup,
+byte caps, a standing audit, and a rebuildable derived FTS5. Includes the conflict-resolution rule:
+*absorb what helps; when mechanisms conflict, tell which is better and use that one.*
 
 License: MIT（可改）
